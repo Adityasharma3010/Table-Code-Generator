@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>HTML Table Generator</title>
+<style>
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: radial-gradient(1200px 600px at 10% -10%, #1b2340 0%, #0d1020 45%, #08090f 100%);
+    color: #e9ecf5;
+    font-family: 'Segoe UI', Roboto, Inter, Arial, sans-serif;
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="none" stroke="%237c9bff" stroke-width="2"/></svg>') 12 12, auto;
+  }
+
+  a, button, textarea, .btn { cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="8" fill="%237c9bff" fill-opacity="0.25" stroke="%2300e0c6" stroke-width="2"/></svg>') 13 13, pointer; }
+
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    background: linear-gradient(90deg, #7c9bff, #00e0c6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: 0.5px;
+  }
+
+  header p {
+    color: #9aa3c0;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 800px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+  }
+
+  .card:hover {
+    border-color: rgba(124,155,255,0.5);
+    box-shadow: 0 8px 30px rgba(124,155,255,0.12);
+  }
+
+  .card.full { grid-column: 1 / -1; }
+
+  .card label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #7c9bff;
+    margin-bottom: 4px;
+  }
+
+  .card .hint {
+    font-size: 12.5px;
+    color: #8891ad;
+    margin: 0 0 12px;
+    line-height: 1.5;
+  }
+
+  textarea {
+    width: 100%;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: #e9ecf5;
+    font-family: 'Fira Code', Consolas, monospace;
+    font-size: 12.5px;
+    padding: 12px;
+    resize: vertical;
+    transition: border-color .2s ease, box-shadow .2s ease;
+    line-height: 1.5;
+  }
+
+  textarea:focus {
+    outline: none;
+    border-color: #00e0c6;
+    box-shadow: 0 0 0 3px rgba(0,224,198,0.15);
+  }
+
+  #example { height: 200px; }
+  #data { height: 240px; }
+  #output { height: 220px; }
+
+  .btn-row {
+    display: flex;
+    justify-content: center;
+    margin: 8px 0 36px;
+  }
+
+  .btn {
+    appearance: none;
+    border: none;
+    padding: 14px 36px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    border-radius: 999px;
+    color: #08090f;
+    background: linear-gradient(90deg, #7c9bff, #00e0c6);
+    box-shadow: 0 6px 24px rgba(0,224,198,0.25);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 32px rgba(0,224,198,0.4);
+    filter: brightness(1.08);
+  }
+
+  .btn:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 40px 0 14px;
+    color: #e9ecf5;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #00e0c6;
+    box-shadow: 0 0 12px #00e0c6;
+  }
+
+  #preview {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 18px;
+    overflow: auto;
+  }
+
+  ::-webkit-scrollbar { height: 10px; width: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(124,155,255,0.35); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(124,155,255,0.6); }
+
+  .copy-btn {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #00e0c6;
+    background: rgba(0,224,198,0.08);
+    border: 1px solid rgba(0,224,198,0.3);
+    border-radius: 8px;
+    padding: 8px 14px;
+    transition: background .2s ease;
+  }
+  .copy-btn:hover { background: rgba(0,224,198,0.18); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>HTML table generator</h1>
+    <p>Paste an example table to clone its exact structure and classes, then drop in your data.</p>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <label>1. Example table (optional)</label>
+      <p class="hint">Paste the full HTML of an existing table — its tags, classes, and &lt;style&gt; block will be reused exactly.</p>
+      <textarea id="example" placeholder="<style>...</style>
+<table class=&quot;my-table&quot;>
+  <tr><th>Header</th></tr>
+  <tr><td>Cell</td></tr>
+</table>"></textarea>
+    </div>
+
+    <div class="card">
+      <label>2. Table data</label>
+      <p class="hint">First row = headers, then one row per line. Tab-separated, or one value per line like a copied table.</p>
+      <textarea id="data" placeholder="Promotion	Bonus value
+Sportsbook first-deposit bonus	Up to ৳3,000 (50%)"></textarea>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn" onclick="generate()">Generate table</button>
+  </div>
+
+  <div class="section-title">Output HTML</div>
+  <div class="card full" style="padding:16px;">
+    <textarea id="output" readonly></textarea>
+    <button class="copy-btn" onclick="copyOutput()">Copy code</button>
+  </div>
+
+  <div class="section-title">Live preview</div>
+  <div id="preview"></div>
+</div>
+
+<script>
+function parseData(raw){
+  const lines = raw.split(/\r?\n/).filter(l => l.trim() !== '');
+  if(lines.some(l => l.includes('\t'))){
+    return lines.map(l => l.split('\t'));
+  }
+  return null;
+}
+
+function groupByHeaderCount(raw){
+  const lines = raw.split(/\r?\n/).filter(l => l.trim() !== '');
+  if(lines.length === 0) return [];
+  for(let h=2; h<=12; h++){
+    if((lines.length - h) > 0 && (lines.length - h) % h === 0){
+      const rows = [lines.slice(0,h)];
+      for(let i=h; i<lines.length; i+=h){
+        rows.push(lines.slice(i, i+h));
+      }
+      return rows;
+    }
+  }
+  return [lines];
+}
+
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function generate(){
+  const exampleRaw = document.getElementById('example').value.trim();
+  const dataRaw = document.getElementById('data').value;
+
+  let rows = parseData(dataRaw);
+  if(rows === null){
+    rows = groupByHeaderCount(dataRaw);
+  }
+  if(rows.length === 0){
+    document.getElementById('output').value = '';
+    document.getElementById('preview').innerHTML = '';
+    return;
+  }
+
+  const header = rows[0];
+  const body = rows.slice(1);
+
+  let html;
+
+  if(exampleRaw){
+    const tableStart = exampleRaw.search(/<table[^>]*>/i);
+    const tableEndMatch = exampleRaw.match(/<\/table>/i);
+    const tableEnd = tableEndMatch ? tableEndMatch.index + tableEndMatch[0].length : exampleRaw.length;
+
+    const prefix = tableStart >= 0 ? exampleRaw.slice(0, tableStart) : '';
+    const suffix = tableStart >= 0 ? exampleRaw.slice(tableEnd) : '';
+    const tableBlock = tableStart >= 0 ? exampleRaw.slice(tableStart, tableEnd) : exampleRaw;
+
+    const tableOpenMatch = tableBlock.match(/<table[^>]*>/i);
+    const tableOpenTag = tableOpenMatch ? tableOpenMatch[0] : '<table>';
+    const usesTh = /<th[\s>]/i.test(tableBlock);
+
+    const trMatches = [...tableBlock.matchAll(/<tr[^>]*>/gi)];
+    const headerTrTag = trMatches[0] ? trMatches[0][0] : '<tr>';
+    const bodyTrTag = trMatches[1] ? trMatches[1][0] : headerTrTag;
+
+    const thMatch = tableBlock.match(/<th[^>]*>/i);
+    const thTag = thMatch ? thMatch[0] : '<th>';
+    const tdMatch = tableBlock.match(/<td[^>]*>/i);
+    const tdTag = tdMatch ? tdMatch[0] : '<td>';
+
+    const hasThead = /<thead[^>]*>/i.test(tableBlock);
+    const hasTbody = /<tbody[^>]*>/i.test(tableBlock);
+    const theadOpen = hasThead ? tableBlock.match(/<thead[^>]*>/i)[0] : '';
+    const tbodyOpen = hasTbody ? tableBlock.match(/<tbody[^>]*>/i)[0] : '';
+
+    let out = prefix + tableOpenTag + '\n';
+    if(hasThead) out += theadOpen + '\n';
+    out += headerTrTag + '\n';
+    header.forEach(h => {
+      const cellTag = usesTh ? thTag : tdTag;
+      const closeTag = usesTh ? '</th>' : '</td>';
+      out += '    ' + cellTag + escapeHtml(h) + closeTag + '\n';
+    });
+    out += '</tr>\n';
+    if(hasThead) out += '</thead>\n';
+
+    if(hasTbody) out += tbodyOpen + '\n';
+    body.forEach(r => {
+      out += bodyTrTag + '\n';
+      r.forEach(cell => {
+        out += '    ' + tdTag + escapeHtml(cell || '') + '</td>\n';
+      });
+      out += '</tr>\n';
+    });
+    if(hasTbody) out += '</tbody>\n';
+
+    out += '</table>' + suffix;
+    html = out;
+  } else {
+    let out = '<table>\n<tr>\n';
+    header.forEach(h => out += '  <th>' + escapeHtml(h) + '</th>\n');
+    out += '</tr>\n';
+    body.forEach(r => {
+      out += '<tr>\n';
+      r.forEach(cell => out += '  <td>' + escapeHtml(cell || '') + '</td>\n');
+      out += '</tr>\n';
+    });
+    out += '</table>';
+    html = out;
+  }
+
+  document.getElementById('output').value = html;
+  document.getElementById('preview').innerHTML = html;
+}
+
+function copyOutput(){
+  const el = document.getElementById('output');
+  el.select();
+  document.execCommand('copy');
+}
+</script>
+
+</body>
+</html>
