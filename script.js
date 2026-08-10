@@ -101,7 +101,7 @@ function escapeHtml(s){
  *    cell on its own line) — inferred by finding a header-row length that
  *    evenly divides the remaining lines.
  */
-function parseData(raw){
+function parseData(raw, manualCols){
   const lines = raw.split(/\r?\n/).filter(l => l.trim() !== '');
   if(lines.length === 0) return [];
 
@@ -115,15 +115,36 @@ function parseData(raw){
     return lines.map(l => l.split(',').map(c => c.trim()));
   }
 
-  // fallback: one value per line, infer header length
+  // one value per line: use the manual column count if the user gave one —
+  // this is the only reliable way, since guessing from divisibility alone
+  // is easily wrong (e.g. 15 lines could be 3x5 or 5x3 or 1x15).
+  if(manualCols && manualCols > 0){
+    const h = manualCols;
+    const rows = [lines.slice(0, h)];
+    for(let i = h; i < lines.length; i += h){
+      const chunk = lines.slice(i, i + h);
+      while(chunk.length < h) chunk.push(''); // pad short final row
+      rows.push(chunk);
+    }
+    return rows;
+  }
+
+  // no manual count given: guess by finding a header length that divides
+  // the rest evenly, preferring larger column counts (closer to a real
+  // table header) over small coincidental divisors.
+  const candidates = [];
   for(let h = 2; h <= 12; h++){
     if((lines.length - h) > 0 && (lines.length - h) % h === 0){
-      const rows = [lines.slice(0, h)];
-      for(let i = h; i < lines.length; i += h){
-        rows.push(lines.slice(i, i + h));
-      }
-      return rows;
+      candidates.push(h);
     }
+  }
+  if(candidates.length > 0){
+    const h = candidates[candidates.length - 1]; // largest valid guess
+    const rows = [lines.slice(0, h)];
+    for(let i = h; i < lines.length; i += h){
+      rows.push(lines.slice(i, i + h));
+    }
+    return rows;
   }
   return [lines];
 }
@@ -222,9 +243,14 @@ function render(){
   document.getElementById('preview').innerHTML = html;
 }
 
+function getManualCols(){
+  const v = parseInt(document.getElementById('col-count').value, 10);
+  return Number.isFinite(v) && v > 0 ? v : null;
+}
+
 document.getElementById('generate-btn').addEventListener('click', () => {
   lastExample = document.getElementById('example').value.trim();
-  lastRows = parseData(document.getElementById('data').value);
+  lastRows = parseData(document.getElementById('data').value, getManualCols());
   transposed = false;
   render();
 });
@@ -232,7 +258,7 @@ document.getElementById('generate-btn').addEventListener('click', () => {
 document.getElementById('rotate-btn').addEventListener('click', () => {
   if(!lastRows){
     lastExample = document.getElementById('example').value.trim();
-    lastRows = parseData(document.getElementById('data').value);
+    lastRows = parseData(document.getElementById('data').value, getManualCols());
   }
   transposed = !transposed;
   render();
