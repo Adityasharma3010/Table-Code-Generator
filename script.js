@@ -11,42 +11,18 @@ themeToggle.addEventListener('click', () => {
 });
 
 /* ===================== CUSTOM CURSOR ===================== */
-const dot = document.createElement('div');
-dot.id = 'cursor-dot';
-const ring = document.createElement('div');
-ring.id = 'cursor-ring';
-document.body.appendChild(dot);
-document.body.appendChild(ring);
-
-let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
-let ringX = mouseX, ringY = mouseY;
-
-window.addEventListener('mousemove', (e) => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-  dot.style.left = mouseX + 'px';
-  dot.style.top = mouseY + 'px';
-  spawnParticle(mouseX, mouseY);
-});
-
-document.querySelectorAll('button, textarea, a, input').forEach(el => {
-  el.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
-  el.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
-});
-
-function animateRing(){
-  ringX += (mouseX - ringX) * 0.18;
-  ringY += (mouseY - ringY) * 0.18;
-  ring.style.left = ringX + 'px';
-  ring.style.top = ringY + 'px';
-  requestAnimationFrame(animateRing);
-}
-animateRing();
+// Cursor shape is now a pure CSS `cursor: url(svg)` on html/body and on
+// interactive elements (see style.css) — no JS positioning needed.
+// The particle trail below still follows the real mouse position.
 
 /* ===================== PARTICLE TRAIL ===================== */
 const canvas = document.getElementById('fx-canvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
+
+window.addEventListener('mousemove', (e) => {
+  spawnParticle(e.clientX, e.clientY);
+});
 
 function resizeCanvas(){
   canvas.width = window.innerWidth;
