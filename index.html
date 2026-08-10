@@ -32,9 +32,13 @@
 
     <div class="card">
       <label>2. Table data</label>
-      <p class="hint">First row = headers, then one row per line. Works with tab-separated data, or a table copy-pasted straight from Word/Excel/Sheets (row-per-line, tab-separated cells).</p>
+      <p class="hint">First row = headers, then one row per line. Works with tab-separated data, or a table copy-pasted straight from Word/Excel/Sheets (row-per-line, tab-separated cells). If your paste has no tabs (one value per line), set the column count below so it doesn't have to guess.</p>
       <textarea id="data" placeholder="Promotion	Bonus value
 Sportsbook first-deposit bonus	Up to ৳3,000 (50%)"></textarea>
+      <div class="col-count-row">
+        <label for="col-count" class="inline-label">Columns (only needed for one-value-per-line pastes)</label>
+        <input type="number" id="col-count" min="1" max="20" placeholder="auto">
+      </div>
     </div>
   </div>
 
