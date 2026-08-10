@@ -83,6 +83,43 @@ function tickParticles(){
 }
 tickParticles();
 
+/* ===================== RICH TABLE PASTE (Google Docs / Word / Sheets) ===================== */
+// When pasting into the data box, browsers also carry a real HTML <table>
+// on the clipboard (not just plain text) if the source was a table. We read
+// that directly so column structure is exact — no guessing needed.
+const dataTextarea = document.getElementById('data');
+
+dataTextarea.addEventListener('paste', (e) => {
+  const html = e.clipboardData && e.clipboardData.getData('text/html');
+  if(!html) return; // no rich data, let default plain-text paste happen
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const table = doc.querySelector('table');
+  if(!table) return; // pasted content wasn't a table, let default paste happen
+
+  e.preventDefault();
+
+  const rows = [...table.querySelectorAll('tr')].map(tr => {
+    return [...tr.querySelectorAll('th,td')].map(cell => {
+      // collapse internal whitespace/newlines from rich text into a single line
+      return cell.textContent.replace(/\s+/g, ' ').trim();
+    });
+  }).filter(r => r.length > 0);
+
+  if(rows.length === 0) return;
+
+  const text = rows.map(r => r.join('\t')).join('\n');
+
+  // insert at cursor position, replacing any current selection
+  const start = dataTextarea.selectionStart;
+  const end = dataTextarea.selectionEnd;
+  const before = dataTextarea.value.slice(0, start);
+  const after = dataTextarea.value.slice(end);
+  dataTextarea.value = before + text + after;
+  const newPos = start + text.length;
+  dataTextarea.setSelectionRange(newPos, newPos);
+});
+
 /* ===================== TABLE GENERATION ===================== */
 let lastRows = null;      // last parsed [header, ...body] rows
 let lastExample = '';     // last example HTML used
