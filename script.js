@@ -197,7 +197,7 @@ function buildHtml(rows, exampleRaw){
     const headerTrTag = trMatches[0] ? trMatches[0][0] : '<tr>';
     const bodyTrTag = trMatches[1] ? trMatches[1][0] : headerTrTag;
 
-    const thMatch = tableBlock.match(/<th[^>]*>/i);
+    const thMatch = tableBlock.match(/<th(?:\s[^>]*)?>/i);
     const thTag = thMatch ? thMatch[0] : '<th>';
     const tdMatch = tableBlock.match(/<td[^>]*>/i);
     const tdTag = tdMatch ? tdMatch[0] : '<td>';
